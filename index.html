@@ -32,7 +32,30 @@
         h1 {
             color: white;
             text-shadow: 0 2px 4px var(--shadow-color);
+            margin-bottom: 1rem; /* Adjusted margin */
+        }
+
+        .difficulty-selector {
+            display: flex;
+            gap: 1rem;
             margin-bottom: 2rem;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .difficulty-selector label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .difficulty-selector input {
+            cursor: pointer;
+            accent-color: #818cf8;
         }
 
         .sortable-list {
@@ -145,6 +168,12 @@
 
     <h1>Sort the Prefix</h1>
 
+    <div class="difficulty-selector">
+        <label><input type="radio" name="difficulty" value="easy"> Easy</label>
+        <label><input type="radio" name="difficulty" value="medium" checked> Medium</label>
+        <label><input type="radio" name="difficulty" value="hard"> Hard</label>
+    </div>
+
     <ul class="sortable-list" id="sortable-list"></ul>
 
     <div class="success-message" id="success-message">
@@ -158,38 +187,57 @@
             const sortableList = document.getElementById('sortable-list');
             const successMessage = document.getElementById('success-message');
             const playAgainBtn = document.getElementById('play-again-btn');
+            const difficultyRadios = document.querySelectorAll('input[name="difficulty"]');
 
             const PREFIXES = [
-                { name: 'yotta', factor: '10²⁴' }, { name: 'zetta', factor: '10²¹' },
-                { name: 'exa', factor: '10¹⁸' }, { name: 'peta', factor: '10¹⁵' },
-                { name: 'tera', factor: '10¹²' }, { name: 'giga', factor: '10⁹' },
-                { name: 'mega', factor: '10⁶' }, { name: 'kilo', factor: '10³' },
-                { name: 'hecto', factor: '10²' }, { name: 'deca', factor: '10¹' },
-                { name: 'deci', factor: '10⁻¹' }, { name: 'centi', factor: '10⁻²' },
-                { name: 'milli', factor: '10⁻³' }, { name: 'micro', factor: '10⁻⁶' },
-                { name: 'nano', factor: '10⁻⁹' }, { name: 'pico', factor: '10⁻¹²' },
-                { name: 'femto', factor: '10⁻¹⁵' }, { name: 'atto', factor: '10⁻¹⁸' },
-                { name: 'zepto', factor: '10⁻²¹' }, { name: 'yocto', factor: '10⁻²⁴' }
+                { name: 'yotta', factor: '10²⁴', placeValue: 'Septillion' },
+                { name: 'zetta', factor: '10²¹', placeValue: 'Sextillion' },
+                { name: 'exa', factor: '10¹⁸', placeValue: 'Quintillion' },
+                { name: 'peta', factor: '10¹⁵', placeValue: 'Quadrillion' },
+                { name: 'tera', factor: '10¹²', placeValue: 'Trillion' },
+                { name: 'giga', factor: '10⁹', placeValue: 'Billion' },
+                { name: 'mega', factor: '10⁶', placeValue: 'Million' },
+                { name: 'kilo', factor: '10³', placeValue: 'Thousand' },
+                { name: 'hecto', factor: '10²', placeValue: 'Hundred' },
+                { name: 'deca', factor: '10¹', placeValue: 'Ten' },
+                { name: 'deci', factor: '10⁻¹', placeValue: 'Tenth' },
+                { name: 'centi', factor: '10⁻²', placeValue: 'Hundredth' },
+                { name: 'milli', factor: '10⁻³', placeValue: 'Thousandth' },
+                { name: 'micro', factor: '10⁻⁶', placeValue: 'Millionth' },
+                { name: 'nano', factor: '10⁻⁹', placeValue: 'Billionth' },
+                { name: 'pico', factor: '10⁻¹²', placeValue: 'Trillionth' },
+                { name: 'femto', factor: '10⁻¹⁵', placeValue: 'Quadrillionth' },
+                { name: 'atto', factor: '10⁻¹⁸', placeValue: 'Quintillionth' },
+                { name: 'zepto', factor: '10⁻²¹', placeValue: 'Sextillionth' },
+                { name: 'yocto', factor: '10⁻²⁴', placeValue: 'Septillionth' }
             ];
 
             let state = {
                 cards: [],
                 draggedEl: null,
                 isSolved: false,
+                difficulty: 'medium',
             };
 
-            function createCard(prefix, index) {
+            function createCard(prefix, index, difficulty) {
                 const card = document.createElement('li');
                 card.className = 'card';
                 card.setAttribute('draggable', 'true');
                 card.dataset.index = index;
                 card.dataset.name = prefix.name;
 
+                let displayText = prefix.name;
+                if (difficulty === 'hard') {
+                    const displayOptions = ['name', 'factor', 'placeValue'];
+                    const randomChoice = displayOptions[Math.floor(Math.random() * displayOptions.length)];
+                    displayText = prefix[randomChoice];
+                }
+
                 card.innerHTML = `
                     <svg class="grip-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
                     <div class="content">
                         <span class="factor"></span>
-                        <span class="prefix-name">${prefix.name}</span>
+                        <span class="prefix-name">${displayText}</span>
                     </div>
                 `;
                 return card;
@@ -203,10 +251,10 @@
                 return array;
             }
 
-            function renderCards() {
+            function renderCards(difficulty) {
                 sortableList.innerHTML = '';
                 state.cards.forEach((prefix, index) => {
-                    const card = createCard(prefix, index);
+                    const card = createCard(prefix, index, difficulty);
                     sortableList.appendChild(card);
                 });
                 addEventListeners();
@@ -214,7 +262,13 @@
 
             function checkSolution() {
                 const currentOrder = Array.from(sortableList.children).map(card => card.dataset.name);
-                const isCorrect = currentOrder.every((name, index) => name === PREFIXES[index].name);
+                const correctOrder = state.cards.map(p => p.name).sort((a, b) => {
+                    const indexA = PREFIXES.findIndex(p => p.name === a);
+                    const indexB = PREFIXES.findIndex(p => p.name === b);
+                    return indexA - indexB;
+                });
+
+                const isCorrect = currentOrder.every((name, index) => name === correctOrder[index]);
                 
                 if (isCorrect) {
                     state.isSolved = true;
@@ -243,7 +297,6 @@
 
             function getDragAfterElement(y) {
                 const draggableElements = [...sortableList.querySelectorAll('.card:not(.dragging)')];
-
                 return draggableElements.reduce((closest, child) => {
                     const box = child.getBoundingClientRect();
                     const offset = y - box.top - box.height / 2;
@@ -263,12 +316,10 @@
 
             function addEventListeners() {
                 const cards = sortableList.querySelectorAll('.card');
-
                 cards.forEach(card => {
                     card.addEventListener('dragstart', handleDragStart);
                     card.addEventListener('dragend', handleDragEnd);
                 });
-
                 sortableList.addEventListener('dragover', handleDragOver);
                 sortableList.addEventListener('drop', handleDrop);
             }
@@ -276,9 +327,7 @@
             function handleDragStart(e) {
                 if (state.isSolved) return;
                 state.draggedEl = e.target;
-
                 e.dataTransfer.effectAllowed = 'move';
-
                 setTimeout(() => {
                     e.target.classList.add('dragging');
                 }, 0);
@@ -287,7 +336,6 @@
             function handleDrop(e) {
                 e.preventDefault();
                 if (state.isSolved) return;
-
                 const afterElement = getDragAfterElement(e.clientY);
                 if (afterElement == null) {
                     sortableList.appendChild(state.draggedEl);
@@ -300,24 +348,19 @@
                 if (state.isSolved) return;
                 e.target.classList.remove('dragging');
                 resetDragStyles();
-
                 checkSolution();
             }
 
             function handleDragOver(e) {
                 e.preventDefault();
                 if (state.isSolved) return;
-
                 const afterElement = getDragAfterElement(e.clientY);
                 resetDragStyles();
-
                 const children = [...sortableList.children];
                 const draggedIndex = children.indexOf(state.draggedEl);
                 const afterIndex = afterElement ? children.indexOf(afterElement) : children.length;
-
                 children.forEach((child, index) => {
                     if (child === state.draggedEl) return;
-
                     if (draggedIndex < afterIndex && index > draggedIndex && index < afterIndex) {
                         child.classList.add('drag-over-up');
                     } else if (draggedIndex > afterIndex && index < draggedIndex && index >= afterIndex) {
@@ -329,13 +372,24 @@
             function resetGame() {
                 state.isSolved = false;
                 successMessage.classList.remove('visible');
-                state.cards = shuffle([...PREFIXES]);
-                renderCards();
+                
+                const difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+                state.difficulty = difficulty;
+
+                let prefixesForGame = [];
+                if (difficulty === 'easy') {
+                    prefixesForGame = PREFIXES.slice(4, 16); // tera to pico
+                } else {
+                    prefixesForGame = [...PREFIXES];
+                }
+                
+                state.cards = shuffle(prefixesForGame);
+                renderCards(difficulty);
             }
 
             playAgainBtn.addEventListener('click', resetGame);
+            difficultyRadios.forEach(radio => radio.addEventListener('change', resetGame));
 
-            // Initial setup
             resetGame();
         });
     </script>
