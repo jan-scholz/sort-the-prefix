@@ -2,7 +2,7 @@
 
 A simple and fun interactive web game to help you learn and memorize the 20 standard metric prefixes.
 
-![Sort the Prefix Gameplay](https://talesofindustry.org/images/github/sort-the-prefix.png)
+<img alt="Sort the Prefix Gameplay" src="https://talesofindustry.org/images/github/sort-the-prefix.png" width="300" />
 
 ## How to Play
 
