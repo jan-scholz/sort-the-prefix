@@ -24,7 +24,12 @@
             margin: 0;
             padding-top: 1vh;
             box-sizing: border-box;
-            background: linear-gradient(135deg, #4f46e5, #818cf8);
+            background:
+                /* Tiled, offset symbols */
+                url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3e%3ctext x='50' y='58' font-size='50' text-anchor='middle' fill='rgba(255,255,255,0.04)'%3e♥%3c/text%3e%3c/svg%3e") 100px 100px / 200px 200px,
+                url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3e%3ctext x='50' y='58' font-size='50' text-anchor='middle' fill='rgba(255,255,255,0.04)'%3e♥%3c/text%3e%3c/svg%3e") 0 0 / 200px 200px,
+                /* Base gradient */
+                linear-gradient(135deg, #4f46e5, #818cf8);
             color: var(--text-color);
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
